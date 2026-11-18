@@ -7,9 +7,10 @@ CANLI bir matplotlib penceresi acar.
 Kullanim:
     python3 arena/run_live.py --game queens --size 8
     python3 arena/run_live.py --game tango --difficulty 5
+    python3 arena/run_live.py --game slitherlink --difficulty 4
 
     # kendi havuzunuzdan belirli bir puzzle'i izlemek icin:
-    python3 arena/run_live.py --game tango --from-bank bank/takim_x_bank.jsonl --puzzle-id 0
+    python3 arena/run_live.py --game slitherlink --from-bank bank/takim_x_bank.jsonl --puzzle-id 0
 """
 
 import argparse
@@ -22,10 +23,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from games.queens.reference_agent import solve_queens_backtrack, solve_n_queens_any
 from games.tango.reference_agent import solve_tango_backtrack, generate_tango
-from core.live_view import LiveQueensView, LiveTangoView
+from games.slitherlink.reference_agent import solve_slitherlink_backtrack, generate_slitherlink
+from core.live_view import LiveQueensView, LiveTangoView, LiveSlitherlinkView
 
 _SIMPLE_GAMES = {
     "tango": generate_tango,
+    "slitherlink": generate_slitherlink,
 }
 
 
@@ -61,14 +64,14 @@ def build_puzzle(args) -> dict:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--game", choices=['queens', 'tango'], required=True)
+    parser.add_argument("--game", choices=['queens', 'tango', 'slitherlink'], required=True)
     parser.add_argument("--size", type=int, default=8, help="grid boyutu (NxN) -- queens icin")
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--from-bank", default=None, help="bir bank.jsonl dosyasindan puzzle oku")
     parser.add_argument("--puzzle-id", type=int, default=None)
     parser.add_argument("--redraw-every", type=int, default=None, help="kac adimda bir ekrani yenile")
     parser.add_argument("--pause", type=float, default=None, help="her yenilemede bekleme suresi, saniye")
-    parser.add_argument("--difficulty", type=int, default=5, help="(tango) 1-10 arasi")
+    parser.add_argument("--difficulty", type=int, default=5, help="(tango/slitherlink) 1-10 arasi")
     args = parser.parse_args()
 
     puzzle = build_puzzle(args)
@@ -78,6 +81,11 @@ def main():
         pause = args.pause if args.pause is not None else 0.02
         view = LiveTangoView(puzzle, redraw_every=redraw_every, pause=pause)
         result = solve_tango_backtrack(puzzle, on_step=view.on_step)
+    elif args.game == "slitherlink":
+        redraw_every = args.redraw_every if args.redraw_every is not None else 150
+        pause = args.pause if args.pause is not None else 0.01
+        view = LiveSlitherlinkView(puzzle, redraw_every=redraw_every, pause=pause)
+        result = solve_slitherlink_backtrack(puzzle, on_step=view.on_step)
     else:  # queens
         redraw_every = args.redraw_every if args.redraw_every is not None else 1
         pause = args.pause if args.pause is not None else 0.05

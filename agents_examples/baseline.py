@@ -13,15 +13,18 @@ from core.base import BaseGeneratorAgent, BaseSolverAgent, SolveResult
 
 from games.queens.reference_agent import generate_queens, solve_queens
 from games.tango.reference_agent import generate_tango, solve_tango
+from games.slitherlink.reference_agent import generate_slitherlink, solve_slitherlink
 
 _GENERATORS = {
     "queens": generate_queens,
     "tango": generate_tango,
+    "slitherlink": generate_slitherlink,
 }
 
 _SOLVERS = {
     "queens": solve_queens,
     "tango": solve_tango,
+    "slitherlink": solve_slitherlink,
 }
 
 

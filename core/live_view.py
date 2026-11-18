@@ -190,3 +190,78 @@ class LiveTangoView:
         plt.ioff()
         print("Pencereyi kapatmak icin uzerine tiklayip kapatabilir ya da Ctrl+C ile cikabilirsin.")
         plt.show(block=True)
+
+
+class LiveSlitherlinkView:
+    def __init__(self, puzzle, redraw_every=150, pause=0.01):
+        self.puzzle = puzzle
+        self.rows, self.cols = puzzle["size"]
+        self.clues = puzzle["clues"]
+        self.redraw_every = max(1, redraw_every)
+        self.pause = pause
+        self._step_count = 0
+
+        self._gui = _has_gui_backend()
+        if not self._gui:
+            print(f"[UYARI] GUI backend yok ({matplotlib.get_backend()}), sadece ilerleme yazdirilacak.")
+            self.fig = self.ax = None
+            self._line = None
+            return
+
+        plt.ion()
+        self.fig, self.ax = plt.subplots(figsize=(self.cols * 0.6 + 1, self.rows * 0.6 + 1))
+        self.fig.canvas.manager.set_window_title("Slitherlink -- canli cozum")
+        ax = self.ax
+        ax.set_xlim(-0.5, self.cols + 0.5)
+        ax.set_ylim(-0.5, self.rows + 0.5)
+        ax.invert_yaxis()
+        ax.set_aspect("equal")
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        for r in range(self.rows + 1):
+            ax.plot([0, self.cols], [r, r], color="#dddddd", linewidth=0.5, zorder=1)
+        for c in range(self.cols + 1):
+            ax.plot([c, c], [0, self.rows], color="#dddddd", linewidth=0.5, zorder=1)
+
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if self.clues[r][c] is not None:
+                    ax.text(c + 0.5, r + 0.5, str(self.clues[r][c]), ha="center", va="center",
+                            fontsize=11, fontweight="bold", color="#333333", zorder=3)
+
+        (self._line,) = ax.plot([], [], color=PATH_COLOR, linewidth=4, zorder=2, solid_capstyle="round")
+        self._title = ax.set_title("basliyor...", fontsize=10)
+        self.fig.canvas.draw()
+        plt.show(block=False)
+
+    def _redraw(self, edges, title):
+        xs, ys = [], []
+        for e in edges:
+            (r1, c1), (r2, c2) = e[0], e[1]
+            xs += [c1, c2, float("nan")]
+            ys += [r1, r2, float("nan")]
+        self._line.set_data(xs, ys)
+        self._title.set_text(title)
+        self.fig.canvas.draw_idle()
+        self.fig.canvas.flush_events()
+
+    def on_step(self, edges, event):
+        self._step_count += 1
+        if not self._gui:
+            return
+        if self._step_count % self.redraw_every != 0:
+            return
+        self._redraw(edges, title=f"adim {self._step_count} | kenar: {len(edges)} | {event}")
+        plt.pause(self.pause)
+
+    def finish(self, result):
+        status = "COZULDU" if result.solved else f"COZULEMEDI ({result.error})"
+        print(f"\n{status} -- toplam {self._step_count} adim")
+        if not self._gui:
+            return
+        edges = result.solution if result.solved else []
+        self._redraw(edges, title=f"{status} | {self._step_count} adimda")
+        plt.ioff()
+        print("Pencereyi kapatmak icin uzerine tiklayip kapatabilir ya da Ctrl+C ile cikabilirsin.")
+        plt.show(block=True)

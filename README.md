@@ -23,11 +23,7 @@ Kazananı jüri değil, **ölçülen skor** belirler.
 | 17:30 | Kodların teslimi biter |
 | 18:30 | Sonuçların açıklanması |
 
-> **Yeni oyunlar bu depoya eklenir.** Programdaki saatlerde `git pull` ile (ya da depoyu yeniden
-> indirerek) güncelleyin. `core/`, `games/`, `agents_examples/` ve `starter/` içindeki dosyaları
-> düzenlemeyin; kopyalayıp kendi dosyanızda çalışın, böylece güncellemeler çakışmaz.
-
-Şu an açık olan oyun(lar): **Queens**, **Tango**.
+Şu an açık olan oyun(lar): **Queens**, **Tango**, **Slitherlink**.
 
 ---
 
@@ -120,6 +116,38 @@ solution = [["sun",  "moon", "moon", "sun"],
             ["sun",  "moon", "sun",  "moon"]]
 ```
 
+### Slitherlink (zor)
+
+**Amaç:** Nokta ızgarası üzerinde **tek bir kapalı döngü** çizin.
+
+**Kurallar**
+1. Döngü, komşu noktaları yatay ya da dikey kenarlarla birleştirerek oluşur.
+2. Her noktaya **0 ya da 2** kenar bağlanır (dallanma ve uç yok).
+3. Döngü **tek parça**dır (birden fazla ayrı döngü olamaz).
+4. Sayı olan her hücrenin çevresindeki döngü kenarı sayısı o sayıya eşit olur.
+   Boş (`None`) hücrelerde kısıt yoktur.
+
+**Puzzle formatı:** `size = [satır, sütun]` **hücre** sayısıdır; nokta ızgarası
+(satır+1) × (sütun+1) boyutundadır. `clues[r][c]` 0–4 arası bir sayı ya da `None`'dur.
+
+**Çözüm formatı:** döngünün kenarları, `[[[r1, c1], [r2, c2]], ...]`. Koordinatlar
+**nokta** koordinatlarıdır ve komşu iki noktayı birleştirir.
+
+**Zorunlu/yasak kenar (opsiyonel kural):** Generator'ınız isterseniz puzzle'a
+`required_edges` (döngüde **kesinlikle olmalı**) ve `forbidden_edges` (döngüde
+**kesinlikle olamaz**) ekleyebilir. Format çözümdeki kenar formatıyla aynıdır.
+Zorunlu değildir; kullanırsanız witness çözümünüzün bunlarla tutarlı olduğundan
+emin olun. Aynı kenar iki listede birden olamaz.
+
+```python
+# 2x2 hücre, tüm dış çerçeve bir döngü: her hücrenin 2 kenarı döngüde
+puzzle = {"game": "slitherlink", "size": [2, 2],
+          "clues": [[2, 2],
+                    [2, 2]]}
+solution = [[[0, 0], [0, 1]], [[0, 1], [0, 2]], [[0, 2], [1, 2]], [[1, 2], [2, 2]],
+            [[2, 2], [2, 1]], [[2, 1], [2, 0]], [[2, 0], [1, 0]], [[1, 0], [0, 0]]]
+```
+
 Her oyunun tam kuralları ve format kontrolleri `games/<oyun>/validator.py` dosyasında yazıyor.
 
 ---
@@ -133,7 +161,7 @@ class MyGenerator(BaseGeneratorAgent):
     name = "takim_adi_generator"
 
     def generate(self, game: str, difficulty: int, seed: int | None = None):
-        ...  # game: "queens", "tango"
+        ...  # game: "queens", "tango", "slitherlink"
         return puzzle, solution          # ZORUNLU: ikili dönüş
 
 class MySolver(BaseSolverAgent):
@@ -189,6 +217,7 @@ python3 arena/run_match.py --solver takim_adi:MySolver --bank bank/havuz.jsonl -
 ```bash
 python3 arena/run_live.py --game queens --size 8
 python3 arena/run_live.py --game tango --difficulty 5
+python3 arena/run_live.py --game slitherlink --difficulty 4
 ```
 
 ---
