@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Uretilen puzzle bankalari / turnuva ciktilari (kod degil, veri)
+bank/*.jsonl
+bank/tournament/
+results/
+
+# macOS
+.DS_Store
+
+# test/gecici dosyalar
+evil_gen.py
+out/
+
+# yerel test ciktilari
+results/
+bank/*.jsonl
