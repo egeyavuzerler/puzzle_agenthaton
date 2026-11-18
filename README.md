@@ -27,7 +27,7 @@ Kazananı jüri değil, **ölçülen skor** belirler.
 > indirerek) güncelleyin. `core/`, `games/`, `agents_examples/` ve `starter/` içindeki dosyaları
 > düzenlemeyin; kopyalayıp kendi dosyanızda çalışın, böylece güncellemeler çakışmaz.
 
-Şu an açık olan oyun(lar): **Queens**.
+Şu an açık olan oyun(lar): **Queens**, **Tango**.
 
 ---
 
@@ -89,6 +89,37 @@ puzzle = {"game": "queens", "size": [4, 4],
 solution = [[0, 1], [1, 3], [2, 0], [3, 2]]
 ```
 
+### Tango (orta)
+
+**Amaç:** Izgaradaki boş hücreleri güneş (`"sun"`) ya da ay (`"moon"`) ile doldurun.
+
+**Kurallar**
+1. Her satırda ve her sütunda **eşit sayıda** güneş ve ay olur (bloklu hücreler sayılmaz).
+2. Yan yana ya da alt alta **3 aynı sembol** gelemez.
+3. Bazı komşu hücre çiftleri arasında işaret vardır: `"equal"` (aynı sembol) ya da
+   `"opposite"` (zıt sembol).
+4. `prefilled` hücreler baştan verilmiştir, değişmez.
+5. `blocked_cells` dokunulmaz hücrelerdir: sembol konmaz. Bu yüzden her satır ve
+   sütundaki **serbest hücre sayısı çift** olmalıdır; aksi halde puzzle geçersizdir.
+
+**Puzzle formatı:** `prefilled` ve `constraints` listeleri boş olabilir.
+
+**Çözüm formatı:** `size` boyutunda 2B liste. Her hücre `"sun"` ya da `"moon"`;
+bloklu hücreler `"blocked"` yazılır.
+
+```python
+puzzle = {"game": "tango", "size": [4, 4], "blocked_cells": [],
+          "prefilled": [{"pos": [0, 0], "value": "sun"},
+                        {"pos": [3, 3], "value": "moon"}],
+          "constraints": [{"cell1": [0, 1], "cell2": [0, 2], "type": "equal"},
+                          {"cell1": [0, 0], "cell2": [1, 0], "type": "opposite"},
+                          {"cell1": [1, 1], "cell2": [1, 2], "type": "equal"}]}
+solution = [["sun",  "moon", "moon", "sun"],
+            ["moon", "sun",  "sun",  "moon"],
+            ["moon", "sun",  "moon", "sun"],
+            ["sun",  "moon", "sun",  "moon"]]
+```
+
 Her oyunun tam kuralları ve format kontrolleri `games/<oyun>/validator.py` dosyasında yazıyor.
 
 ---
@@ -102,7 +133,7 @@ class MyGenerator(BaseGeneratorAgent):
     name = "takim_adi_generator"
 
     def generate(self, game: str, difficulty: int, seed: int | None = None):
-        ...  # game: "queens"
+        ...  # game: "queens", "tango"
         return puzzle, solution          # ZORUNLU: ikili dönüş
 
 class MySolver(BaseSolverAgent):
@@ -157,6 +188,7 @@ python3 arena/run_match.py --solver takim_adi:MySolver --bank bank/havuz.jsonl -
 **Referans çözücüyü canlı izleyin:**
 ```bash
 python3 arena/run_live.py --game queens --size 8
+python3 arena/run_live.py --game tango --difficulty 5
 ```
 
 ---

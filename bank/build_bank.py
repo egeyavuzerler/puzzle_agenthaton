@@ -5,7 +5,7 @@ Bir katılımcının GENERATOR agent'ını alır, registry'deki HER oyun türün
 `per_type` kadar (varsayılan 500) geçerli puzzle üretir, hepsini tek bir
 bank.jsonl dosyasına yazar.
 
-Yarışma oyunları: queens (1 oyun x 500 = 500 puzzle).
+Yarışma oyunları: queens, tango (2 oyun x 500 = 1000 puzzle).
 
 Kullanım:
     python bank/build_bank.py --generator my_agents.team_a:TeamAGenerator \

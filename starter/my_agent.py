@@ -5,7 +5,7 @@ Bu dosyayi kopyalayip kendi takim adinizla yeniden adlandirin
 (ornegin takim_x/agent.py) ve asagidaki iki sinifi doldurun.
 
 Su haliyle HEMEN CALISIR: referans (baseline) ajanlara yonlendirir, yani
-su an acik olan oyunlarin (queens) hepsi icin gecerli puzzle uretir ve cozmeye calisir. Siz tek tek
+su an acik olan oyunlarin (queens, tango) hepsi icin gecerli puzzle uretir ve cozmeye calisir. Siz tek tek
 oyunlari kendi kodunuzla degistirerek ilerleyin.
 
 Gonderiminizi kontrol edin:

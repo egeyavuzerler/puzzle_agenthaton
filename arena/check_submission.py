@@ -21,7 +21,7 @@ Kullanim:
 
     # sadece bazi oyunlar, daha cok puzzle:
     python3 arena/check_submission.py --generator takim_x.agent:MyGenerator \
-        --games queens --per-type 5
+        --games queens,tango --per-type 5
 
     # kodunuz proje kokunun disindaki bir klasordeyse:
     python3 arena/check_submission.py --solver agent:MySolver --path /yol/klasor

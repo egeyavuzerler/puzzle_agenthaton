@@ -27,6 +27,9 @@ def list_games() -> list[str]:
 
 def _auto_register_defaults() -> None:
     from games.queens.validator import QueensValidator
+    from games.tango.validator import TangoValidator
 
     if "queens" not in _REGISTRY:
         register_game("queens", QueensValidator())
+    if "tango" not in _REGISTRY:
+        register_game("tango", TangoValidator())
