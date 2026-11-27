@@ -63,11 +63,13 @@ Kazananı jüri değil, **ölçülen skor** belirler.
 
 | Ne | Değer |
 | --- | --- |
-| Havuz büyüklüğü | **oyun başına 10 puzzle** (3 oyun → takım başına 30 puzzle) |
+| Havuz büyüklüğü | **oyun başına 100 puzzle** (3 oyun → takım başına 300 puzzle) |
 | `difficulty` | puzzle sırasına göre 1, 2, … 10, 1, 2, … şeklinde **döngüsel**; hakem verir |
 | `seed` | her puzzle için hakem verir (`None` gelmez), puzzle'lar arasında farklıdır |
 | `generate()` süresi | çağrı başına **20 sn**; bir puzzle için en çok 20 deneme (farklı seed'lerle) |
 | Üretimden vazgeçme | bir oyunda art arda 10 puzzle üretilemezse ya da oyun başına toplam **600 sn** dolarsa o oyundan vazgeçilir (kalan kısım eksik sayılır) |
+| Generator süre payı | 100 puzzle için oyun başına 600 sn: **puzzle başına ortalama 6 sn'nin altında** kalın, yoksa havuz eksik kalır |
+| Çözme bütçesi | solver'ınız **bir rakibin havuzu için en çok 250 sn** harcayabilir; dolunca o havuzun kalan puzzle'ları çözülmemiş sayılır. Ayrıca bir oyunda **art arda 30** hata/sert zaman aşımı olursa o oyunun kalanı çözülmemiş sayılır (sayaç oyun başına sıfırlanır) |
 | `solve()` süresi | puzzle başına **5 sn** (`time_limit_s` olarak size verilir); **8 sn**'de süreç zorla durdurulur |
 | Bellek / CPU | **1024 MB**; çağrı başına 60 sn CPU süresi |
 | Python | 3.12; **yalnızca standart kütüphane** |
@@ -214,7 +216,7 @@ mı, dosyaya yazma ya da ağ kullanımı var mı (`[UYARI]`). Çözüm süresi s
 ```bash
 python3 bank/build_bank.py --generator takim_adi:MyGenerator --out bank/havuz.jsonl --per-type 10
 ```
-Hakem oyun başına **10** puzzle ister. Yavaş bir generator'da büyük `--per-type` değerleri
+Hakem oyun başına **100** puzzle ister (yukarıdaki komutta hızlı deneme için 10 var; gerçek yükü `--per-type 100` ile deneyin). Yavaş bir generator'da büyük `--per-type` değerleri
 dakikalar sürebilir. Çıktıdaki `failed_solution` yüksekse generator'ınız çözülemez puzzle üretiyor
 demektir, `failed_shape` yüksekse puzzle'larınız şema/boyut kurallarına uymuyordur (ilk hata
 mesajı yazdırılır).
@@ -223,6 +225,14 @@ mesajı yazdırılır).
 ```bash
 python3 arena/run_match.py --solver takim_adi:MySolver --bank bank/havuz.jsonl --time-limit 5
 ```
+
+**Kendinize karşı (ya da bir rakibe karşı) deneyin:**
+```bash
+python3 arena/self_play.py --agent takim_adi                 # kendi solver'ınız kendi havuzunuzu çözer
+python3 arena/self_play.py --agent takim_adi --vs rakip_adi  # iki dosya birbirinin havuzunu çözer, mini skor tablosu
+python3 arena/self_play.py --agent takim_adi --per-type 100  # hakemin yükü: oyun başına 100 puzzle
+```
+Generator + solver'ı tek komutla dener: havuzunuzun kaçı girdi, hangi oyunda kaç puzzle çözüldü, ortalama süre, zaman aşımı/hata sayısı. `--vs` ile iki ajan birbirini yarışma formülüyle ölçer (solver skoru = rakibin havuzundaki çözme oranınız, generator skoru = 1 − rakibin sizin havuzunuzdaki oranı). Dosyanız repo kökünde değilse `--path klasor` ekleyin. Süre sınırları hakemle aynıdır (5 sn / 8 sn); ağ/dosya kısıtı yerelde uygulanmaz. **Hakem her oyundan 100 puzzle ile test edecek**: `--per-type 100` yavaş ajanlarda dakikalar sürebilir, önceden bir kez deneyin.
 
 **Referans çözücüyü canlı izleyin:**
 ```bash
@@ -272,7 +282,7 @@ Birden fazla e-posta gönderirseniz **son e-posta** geçerli sayılır.
 3. **Yerel kontrolden geçmeyi hakemde de geçmek sanmak.** numpy importu ve dosya yazma yerelde çalışabilir, hakem ortamında çalışmaz (Bölüm 2).
 4. **Generator'da duvar saatine bağlı bütçe kullanmak.** Aynı seed farklı makinede ya da yükte farklı puzzle verir; sözleşme "aynı seed, aynı puzzle" ister. Bütçeyi düğüm ya da çağrı sayacına bağlayın, süreyi yalnızca emniyet için kullanın.
 5. **`seed=None`'ı sabit bir değere çevirmek.** Yerelde her çağrı aynı puzzle'ı üretir ve testleriniz sizi yanıltır. Hakem seed'i her zaman verir.
-6. **Yavaş generator yazmak.** Oyun başına 600 sn bütçe dolunca havuz eksik kalır; eksik kısım rakiplerce çözülmüş sayılır.
+6. **Yavaş generator yazmak.** Oyun başına 600 sn bütçe (100 puzzle → puzzle başına ortalama 6 sn) dolunca havuz eksik kalır; eksik kısım rakiplerce çözülmüş sayılır.
 7. **"Çözülebilir" ile "tek çözümlü"yü karıştırmak.** Tekliğe güveniyorsanız bunu çözüm sayarak test edin; "bir çözüm buldum" testi hatayı gizler.
 8. **Queens generator'ında bölge numaralarını 0..N-1 dışına ya da ızgarayı kare olmayan bir şekle çıkarmak.** Hakem bunları reddeder, puzzle havuza girmez.
 9. **Uzun ömürlü solver'da sınırsız önbellek tutmak.** Bellek sınırı 1 GB; `lru_cache(maxsize=None)` gibi önbellekler sınırı aşabilir.
